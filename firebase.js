@@ -19,12 +19,12 @@ import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.2/firebas
 // Você encontra esses dados em: Firebase Console > Configurações do projeto
 // (ícone de engrenagem) > Seus apps > SDK setup and configuration.
 const firebaseConfig = {
-  apiKey: "COLE_AQUI_SUA_API_KEY",
-  authDomain: "COLE_AQUI_SEU_PROJETO.firebaseapp.com",
-  projectId: "COLE_AQUI_SEU_PROJETO",
-  storageBucket: "COLE_AQUI_SEU_PROJETO.appspot.com",
-  messagingSenderId: "COLE_AQUI_SEU_SENDER_ID",
-  appId: "COLE_AQUI_SEU_APP_ID"
+  apiKey: "AIzaSyAyP-Hxwbc9WxjSs0GiAkH9UtsEtckWcpk",
+  authDomain: "vigilante-painel.firebaseapp.com",
+  projectId: "vigilante-painel",
+  storageBucket: "vigilante-painel.firebasestorage.app",
+  messagingSenderId: "679586336318",
+  appId: "1:679586336318:web:2ef2aedce5e42b49c4cb6f"
 };
 
 const firebaseApp = initializeApp(firebaseConfig);
