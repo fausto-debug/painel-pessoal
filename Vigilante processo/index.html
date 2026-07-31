@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vigilante — Painel Pessoal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body data-anim="on">
+<div class="spotlight-layer"><div class="spotlight-beam"></div></div>
+
+<!-- Tela de carregamento — evita "piscar" a tela de login antes do Firebase responder -->
+<div id="loadingScreen" role="status" aria-live="polite">
+  <div class="mark" style="width:44px;height:44px;font-size:18px;">V</div>
+  <span>Carregando...</span>
+</div>
+
+<!-- Transição leve entre telas (login/cadastro <-> dashboard) -->
+<div id="routeTransition" aria-hidden="true"><div class="spin"></div></div>
+
+<!-- Overlay do menu lateral no mobile -->
+<div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+<!-- ============================= LOGIN ============================= -->
+<div class="auth-screen" id="screenLogin">
+  <div class="auth-box">
+    <div class="mark">V</div>
+    <h2>Bem-vindo de volta</h2>
+    <div class="sub">Entre para acessar seu painel</div>
+    <div class="auth-error" id="loginError"></div>
+    <form id="loginForm">
+      <div class="field"><label>E-mail</label><input type="email" id="loginEmail" required placeholder="voce@email.com"></div>
+      <div class="field"><label>Senha</label><input type="password" id="loginPassword" required placeholder="••••••••"></div>
+      <button class="btn btn-accent" type="submit">Entrar</button>
+    </form>
+    <div class="switch"><a id="goForgot">Esqueci minha senha</a></div>
+    <div class="switch">Não tem conta? <a id="goSignup">Criar conta</a></div>
+  </div>
+</div>
+
+<!-- ============================= CADASTRO ============================= -->
+<div class="auth-screen" id="screenSignup">
+  <div class="auth-box">
+    <div class="mark">V</div>
+    <h2>Criar conta</h2>
+    <div class="sub">Comece a organizar sua rotina</div>
+    <div class="auth-error" id="signupError"></div>
+    <form id="signupForm">
+      <div class="field"><label>Nome</label><input type="text" id="signupName" required placeholder="Seu nome"></div>
+      <div class="field"><label>E-mail</label><input type="email" id="signupEmail" required placeholder="voce@email.com"></div>
+      <div class="field"><label>Senha</label><input type="password" id="signupPassword" required minlength="6" placeholder="Mínimo 6 caracteres"></div>
+      <div class="field"><label>Confirmar senha</label><input type="password" id="signupConfirm" required minlength="6" placeholder="Repita a senha"></div>
+      <button class="btn btn-accent" type="submit">Criar conta</button>
+    </form>
+    <div class="switch">Já tem conta? <a id="goLoginFromSignup">Entrar</a></div>
+  </div>
+</div>
+
+<!-- ============================= RECUPERAR SENHA ============================= -->
+<div class="auth-screen" id="screenForgot">
+  <div class="auth-box">
+    <div class="mark">V</div>
+    <h2>Recuperar senha</h2>
+    <div class="sub">Enviaremos um link de redefinição para o seu e-mail</div>
+    <div class="auth-error" id="forgotError"></div>
+    <div class="auth-success" id="forgotSuccess"></div>
+    <form id="forgotForm">
+      <div class="field"><label>E-mail</label><input type="email" id="forgotEmail" required placeholder="voce@email.com"></div>
+      <button class="btn btn-accent" type="submit">Enviar link</button>
+    </form>
+    <div class="switch"><a id="goLoginFromForgot">Voltar para o login</a></div>
+  </div>
+</div>
+
+<!-- ============================= APP (PROTEGIDO) ============================= -->
+<div class="app" id="appRoot">
+  <!-- ============================= SIDEBAR ============================= -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-head">
+      <div class="mark">V</div>
+      <div>
+        <div class="title">Vigilante</div>
+        <div class="sub">painel pessoal</div>
+      </div>
+      <button class="collapse-btn" id="collapseBtn" title="Recolher menu" aria-label="Recolher menu lateral" aria-expanded="true">◂</button>
+    </div>
+    <nav class="nav" id="navList" aria-label="Navegação principal">
+      <button class="nav-item active" data-view="dashboard" aria-current="page"><span class="ic" aria-hidden="true">🏠</span><span class="label">Dashboard</span></button>
+      <button class="nav-item" data-view="financeiro"><span class="ic" aria-hidden="true">💰</span><span class="label">Financeiro</span></button>
+      <button class="nav-item" data-view="reserva"><span class="ic" aria-hidden="true">🏦</span><span class="label">Reserva Financeira</span></button>
+      <button class="nav-item" data-view="contas"><span class="ic" aria-hidden="true">📅</span><span class="label">Contas</span></button>
+      <button class="nav-item" data-view="habitos"><span class="ic" aria-hidden="true">✅</span><span class="label">Hábitos</span></button>
+      <button class="nav-item" data-view="notas"><span class="ic" aria-hidden="true">📝</span><span class="label">Notas</span></button>
+      <button class="nav-item" data-view="treinos"><span class="ic" aria-hidden="true">🏋️</span><span class="label">Treinos</span></button>
+      <button class="nav-item" data-view="config"><span class="ic" aria-hidden="true">⚙️</span><span class="label">Configurações</span></button>
+    </nav>
+    <div class="sidebar-foot">
+      <div class="user-chip">
+        <div class="avatar" id="sideAvatar">U</div>
+        <div style="flex:1;">
+          <div class="name" id="sideName">Usuário</div>
+          <div class="role">Modo foco ativo</div>
+        </div>
+        <button class="icon-btn" id="logoutBtn" title="Sair" aria-label="Sair da conta" style="width:32px;height:32px;">⏻</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ============================= MAIN ============================= -->
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <div class="greeting" id="greetingText"><span class="wave" aria-hidden="true">👋</span> Olá</div>
+        <div class="datetime" id="datetimeText"></div>
+      </div>
+      <div class="topbar-right">
+        <button class="icon-btn mobile-toggle" id="mobileMenuBtn" title="Menu" aria-label="Abrir menu lateral">☰</button>
+        <button class="icon-btn" id="exportQuickBtn" title="Exportar dados" aria-label="Exportar dados em JSON">⭳</button>
+      </div>
+    </div>
+
+    <!-- ---------------- DASHBOARD ---------------- -->
+    <section class="view active" id="view-dashboard">
+      <div class="grid cols-5" id="dashCards"></div>
+
+      <div class="grid cols-2" style="margin-top:18px;">
+        <div class="card">
+          <div class="panel-title">Evolução financeira <span class="muted">últimos 6 meses</span></div>
+          <div class="canvas-wrap"><canvas id="chartFinance"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="panel-title">Evolução dos hábitos <span class="muted">últimos 7 dias</span></div>
+          <div class="canvas-wrap"><canvas id="chartHabits"></canvas></div>
+        </div>
+      </div>
+
+      <div class="grid cols-2" style="margin-top:18px;">
+        <div class="card">
+          <div class="panel-title">Resumo do dia</div>
+          <div class="list" id="todaySummary"></div>
+        </div>
+        <div class="card">
+          <div class="panel-title">Contas próximas do vencimento</div>
+          <div class="list" id="upcomingBills"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------------- FINANCEIRO ---------------- -->
+    <section class="view" id="view-financeiro">
+      <div class="section-head">
+        <div><h2>Financeiro</h2><p>Receitas, despesas e seu saldo em tempo real</p></div>
+        <div style="display:flex; gap:10px;">
+          <button class="btn" onclick="openTxModal('receita')">＋ Receita</button>
+          <button class="btn btn-accent" onclick="openTxModal('despesa')">＋ Despesa</button>
+        </div>
+      </div>
+      <div class="grid cols-3">
+        <div class="card stat-card"><div class="top-row"><span class="label">Total recebido</span><div class="ic-badge">↑</div></div><div class="value" id="finTotalIn">R$ 0,00</div></div>
+        <div class="card stat-card"><div class="top-row"><span class="label">Total gasto</span><div class="ic-badge">↓</div></div><div class="value" id="finTotalOut">R$ 0,00</div></div>
+        <div class="card stat-card"><div class="top-row"><span class="label">Saldo disponível</span><div class="ic-badge">Σ</div></div><div class="value" id="finBalance">R$ 0,00</div></div>
+      </div>
+      <div class="grid cols-2" style="margin-top:16px;">
+        <div class="card">
+          <div class="panel-title">Gráfico mensal</div>
+          <div class="canvas-wrap"><canvas id="chartFinanceMonthly"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="panel-title">Histórico <span class="muted" id="txCount"></span></div>
+          <div class="list" id="txList" style="max-height:280px; overflow-y:auto;"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------------- RESERVA FINANCEIRA ---------------- -->
+    <section class="view" id="view-reserva">
+      <div class="section-head">
+        <div><h2>Reserva Financeira</h2><p>Suas metas de longo prazo, sob controle</p></div>
+        <button class="btn btn-accent" onclick="openGoalModal()">＋ Nova meta</button>
+      </div>
+      <div class="grid cols-3" id="goalsGrid"></div>
+    </section>
+
+    <!-- ---------------- CONTAS ---------------- -->
+    <section class="view" id="view-contas">
+      <div class="section-head">
+        <div><h2>Contas</h2><p>Suas contas fixas, sempre em dia</p></div>
+        <button class="btn btn-accent" onclick="openBillModal()">＋ Nova conta</button>
+      </div>
+      <div class="list" id="billsList"></div>
+    </section>
+
+    <!-- ---------------- HÁBITOS ---------------- -->
+    <section class="view" id="view-habitos">
+      <div class="section-head">
+        <div><h2>Hábitos</h2><p>Disciplina diária, medida com precisão</p></div>
+        <button class="btn btn-accent" onclick="openHabitModal()">＋ Novo hábito</button>
+      </div>
+      <div class="grid cols-3" id="habitsGrid"></div>
+    </section>
+
+    <!-- ---------------- NOTAS ---------------- -->
+    <section class="view" id="view-notas">
+      <div class="section-head">
+        <div><h2>Notas</h2><p>Suas anotações, organizadas por data</p></div>
+        <div style="display:flex; gap:10px; align-items:center;">
+          <div class="search-bar"><span>🔍</span><input type="text" id="noteSearch" placeholder="Pesquisar notas..."></div>
+          <button class="btn btn-accent" onclick="openNoteModal()">＋ Nova nota</button>
+        </div>
+      </div>
+      <div class="notes-grid" id="notesGrid"></div>
+    </section>
+
+    <!-- ---------------- TREINOS ---------------- -->
+    <section class="view" id="view-treinos">
+      <div class="section-head">
+        <div><h2>Treinos</h2><p>Cargas, séries e evolução na academia</p></div>
+        <button class="btn btn-accent" onclick="openWorkoutModal()">＋ Registrar exercício</button>
+      </div>
+      <div class="grid cols-3" style="margin-bottom:16px;">
+        <div class="card stat-card"><span class="label">Treinos realizados</span><div class="value" id="wkTotal">0</div></div>
+        <div class="card stat-card"><span class="label">Tempo médio de treino</span><div class="value" id="wkAvgTime">0 min</div></div>
+        <div class="card stat-card"><span class="label">Grupo mais treinado</span><div class="value" id="wkTopGroup">—</div></div>
+      </div>
+      <div class="tabs" id="workoutTabs"></div>
+      <div class="grid cols-2">
+        <div class="card">
+          <div class="panel-title">Histórico</div>
+          <div class="list" id="workoutHistory" style="max-height:320px; overflow-y:auto;"></div>
+        </div>
+        <div class="card">
+          <div class="panel-title">Evolução de carga</div>
+          <div class="canvas-wrap"><canvas id="chartLoad"></canvas></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------------- CONFIGURAÇÕES ---------------- -->
+    <section class="view" id="view-config">
+      <div class="section-head"><div><h2>Configurações</h2><p>Personalize seu painel</p></div></div>
+      <div class="grid cols-2">
+        <div class="card">
+          <div class="panel-title">Perfil</div>
+          <div class="avatar-upload">
+            <button type="button" class="avatar-big" id="avatarBig" aria-label="Alterar foto de perfil">
+              <span id="avatarBigInner">U</span>
+              <span class="edit-badge" id="avatarEditBadge">Trocar foto</span>
+            </button>
+            <div class="meta">JPG, PNG ou WEBP<br>Tamanho máximo de 5 MB</div>
+            <input type="file" id="avatarFileInput" accept="image/jpeg,image/png,image/webp" class="sr-only" aria-hidden="true">
+          </div>
+          <div class="field"><label>Nome de usuário</label><input type="text" id="cfgName" placeholder="Seu nome"></div>
+          <button class="btn btn-accent" onclick="saveProfile()">Salvar perfil</button>
+        </div>
+        <div class="card">
+          <div class="panel-title">Aparência</div>
+          <div class="settings-row">
+            <div><div class="lbl">Cor de destaque</div><div class="desc">Escolha a cor principal da interface</div></div>
+            <div style="display:flex; gap:10px;" id="colorDots"></div>
+          </div>
+          <div class="settings-row">
+            <div><div class="lbl">Animações</div><div class="desc">Ativar transições e efeitos visuais</div></div>
+            <div class="toggle on" id="animToggle" onclick="toggleAnim()"><div class="knob"></div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="panel-title">Dados</div>
+          <div class="settings-row">
+            <div><div class="lbl">Exportar dados</div><div class="desc">Baixe um backup em formato JSON</div></div>
+            <button class="btn" onclick="exportData()">Exportar</button>
+          </div>
+          <div class="settings-row">
+            <div><div class="lbl">Importar dados</div><div class="desc">Restaure um backup anterior</div></div>
+            <label class="btn" style="cursor:pointer;">Importar<input type="file" id="importFile" accept=".json" style="display:none;"></label>
+          </div>
+          <div class="settings-row">
+            <div><div class="lbl">Limpar dados</div><div class="desc">Apaga tudo e reinicia o painel</div></div>
+            <button class="btn" style="color:var(--danger); border-color:var(--danger-dim);" onclick="clearData()">Limpar tudo</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- ============================= MODAL (genérico) ============================= -->
+<div class="modal-backdrop" id="modalBackdrop" role="presentation">
+  <div class="modal" id="modalBox" role="dialog" aria-modal="true"></div>
+</div>
+
+<div id="toast-wrap" role="status" aria-live="polite"></div>
+
+<!-- app.js é um módulo ES: importa firebase.js, auth.js e database.js internamente -->
+<script type="module" src="app.js"></script>
+</body>
+</html>
