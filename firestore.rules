@@ -1,0 +1,42 @@
+// =============================================================
+// firestore.rules
+// Este arquivo é a FONTE DA VERDADE das regras de segurança do banco
+// de dados — mas por enquanto precisa ser colado manualmente no
+// Firebase Console (Firestore Database → Regras), até configurarmos
+// o Firebase CLI (aí sim isso passa a ser publicado direto por aqui).
+//
+// O QUE ESSA REGRA FAZ, EM PALAVRAS SIMPLES:
+// Qualquer usuário pode ler e escrever seus próprios dados
+// normalmente (nome, foto, cor, hábitos, notas...) — EXCETO o campo
+// "plan". Esse campo só pode ser "free" na criação da conta, e depois
+// disso NUNCA pode mudar através de uma escrita feita pelo navegador
+// do usuário. A única forma de virar "paid" vai ser através de uma
+// Cloud Function (que usa credenciais de administrador e ignora
+// essas regras) — a peça que ainda vamos construir.
+// =============================================================
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{userId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+
+      // Criação da conta: só permite nascer no plano "free".
+      allow create: if request.auth != null
+                    && request.auth.uid == userId
+                    && request.resource.data.plan == "free";
+
+      // Atualização: qualquer campo pode mudar, MENOS o "plan" —
+      // ele precisa continuar exatamente igual ao que já estava salvo.
+      allow update: if request.auth != null
+                    && request.auth.uid == userId
+                    && request.resource.data.plan == resource.data.plan;
+
+      // Subcoleções (transações, hábitos, notas, etc.) — sem restrição
+      // extra, cada usuário só acessa as próprias.
+      match /{collection}/{docId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+  }
+}
